@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Env    serverConfig
 	Logger loggerConfig
+	DB     DBConfig
 }
 
 type serverConfig struct {
@@ -21,10 +22,14 @@ type loggerConfig struct {
 	Level string
 }
 
+type DBConfig struct {
+	URL string
+}
+
 func (e *Config) LoadEnv() error {
 	err := godotenv.Load()
 
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("Failed to load env file: %w", err)
 	}
 
@@ -39,6 +44,12 @@ func (e *Config) LoadEnv() error {
 		return errors.New("log level not defined")
 	}
 	e.Logger.Level = level
+
+	dbUrl, exist := os.LookupEnv("DATABASE_URL")
+	if !exist || dbUrl == "" {
+		return errors.New("database url not defined")
+	}
+	e.DB.URL = dbUrl
 
 	return nil
 }

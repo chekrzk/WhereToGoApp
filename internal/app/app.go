@@ -5,32 +5,42 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chekrzk/WhereToGoApp/internal/handlers/health"
 	"github.com/chekrzk/WhereToGoApp/internal/middlewares"
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
 )
 
-func Run(GracefulCtx context.Context, port string, log zerolog.Logger) error {
-	app := fiber.New()
+type Options struct {
+	Port        string
+	DatabaseURL string
+}
 
-	app.Use(middlewares.RequestID())
-	app.Use(middlewares.AccessLogger(log))
+func Run(GracefulCtx context.Context, options Options, log zerolog.Logger) error {
+	container, err := NewContainer(GracefulCtx, options.DatabaseURL)
 
-	healthHandler := health.New()
-	healthHandler.RegisterRoutes(app)
+	if err != nil {
+		return fmt.Errorf("load container: %w", err)
+	}
+	defer container.Close()
+
+	fiberApp := fiber.New()
+
+	fiberApp.Use(middlewares.RequestID())
+	fiberApp.Use(middlewares.AccessLogger(log))
+
+	container.HealthHandler.RegisterRoutes(fiberApp)
 
 	log.Info().
-		Str("port", port).
-		Msg("Started http server")
+		Str("port", options.Port).
+		Msg("Starting http server")
 
-	if err := app.Listen(":"+port,
+	if err := fiberApp.Listen(":"+options.Port,
 		fiber.ListenConfig{
 			GracefulContext: GracefulCtx,
 			ShutdownTimeout: 10 * time.Second,
 		},
 	); err != nil {
-		return fmt.Errorf("failed to listen on port %v : %w", port, err)
+		return fmt.Errorf("failed to listen on port %s: %w", options.Port, err)
 	}
 	return nil
 }

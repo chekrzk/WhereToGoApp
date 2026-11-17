@@ -48,7 +48,12 @@ func main() {
 		cancel()
 	}()
 
-	if err := app.Run(ctx, cfg.Env.Port, appLogger); err != nil {
+	options := app.Options{
+		Port:        cfg.Env.Port,
+		DatabaseURL: cfg.DB.URL,
+	}
+
+	if err := app.Run(ctx, options, appLogger); err != nil {
 		appLogger.Error().
 			Err(err).
 			Msg("application stopped with error")
