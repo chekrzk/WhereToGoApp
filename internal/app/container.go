@@ -6,12 +6,15 @@ import (
 
 	"github.com/chekrzk/WhereToGoApp/internal/adapters/postgres"
 	"github.com/chekrzk/WhereToGoApp/internal/handlers/health"
+	nearbyhandler "github.com/chekrzk/WhereToGoApp/internal/handlers/nearby"
+	nearbyservice "github.com/chekrzk/WhereToGoApp/internal/services/nearby"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Container struct {
-	Pool          *pgxpool.Pool
-	HealthHandler *health.Handler
+	Pool           *pgxpool.Pool
+	HealthHandler  *health.Handler
+	FindPOIHandler *nearbyhandler.Handle
 }
 
 func (c *Container) Close() {
@@ -28,10 +31,16 @@ func NewContainer(
 		return nil, fmt.Errorf("init postgres: %w", err)
 	}
 
+	repo := postgres.NewPOIRepository(pool)
+
+	findNearbyService := nearbyservice.New(repo)
+
 	healthHandler := health.New(pool)
+	findNearbyHandler := nearbyhandler.New(findNearbyService)
 
 	return &Container{
-		Pool:          pool,
-		HealthHandler: healthHandler,
+		Pool:           pool,
+		HealthHandler:  healthHandler,
+		FindPOIHandler: findNearbyHandler,
 	}, nil
 }

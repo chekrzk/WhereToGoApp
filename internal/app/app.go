@@ -29,6 +29,7 @@ func Run(GracefulCtx context.Context, options Options, log zerolog.Logger) error
 	fiberApp.Use(middlewares.AccessLogger(log))
 
 	container.HealthHandler.RegisterRoutes(fiberApp)
+	container.FindPOIHandler.RegisterRoutes(fiberApp)
 
 	log.Info().
 		Str("port", options.Port).
