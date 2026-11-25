@@ -8,5 +8,6 @@ import (
 )
 
 type BuildingFinder interface {
-	FindContaining(context.Context, geo.Point) (building.Building, error)
+	FindContaining(context.Context, geo.Point) (building.ResolvedBuilding, error)
+	FindNearest(context.Context, geo.Point, int) (building.ResolvedBuilding, error)
 }

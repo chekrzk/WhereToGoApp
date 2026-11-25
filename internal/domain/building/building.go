@@ -12,3 +12,9 @@ type Building struct {
 	Street       string
 	House_number string
 }
+
+type ResolvedBuilding struct {
+	Building  Building
+	DistanceM float64
+	Match     string
+}

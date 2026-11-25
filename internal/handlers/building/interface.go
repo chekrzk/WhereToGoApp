@@ -8,5 +8,5 @@ import (
 )
 
 type BuildSearcher interface {
-	FindBuilding(context.Context, geo.Point) (building.Building, error)
+	FindBuilding(context.Context, geo.Point) (building.ResolvedBuilding, error)
 }
