@@ -1,4 +1,4 @@
-package postgres
+package postgresrepo
 
 import (
 	"context"
@@ -20,7 +20,8 @@ func NewPOIRepository(pool *pgxpool.Pool) *POIRepository {
 }
 
 func (r *POIRepository) FindNearby(ctx context.Context, query poi.NearbyQuery) ([]poi.NearbyPlace, error) {
-	const sql = `
+
+	rows, err := r.pool.Query(ctx, `
 		WITH search AS (
     		SELECT ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography AS center
 		)
@@ -38,9 +39,10 @@ func (r *POIRepository) FindNearby(ctx context.Context, query poi.NearbyQuery) (
  			AND ($4::text = '' OR p.category = $4)
 			AND ($5::text = '' OR p.subcategory = $5)
 		ORDER BY distance_m, p.osm_type, p.osm_id
-		LIMIT $6;`
-
-	rows, err := r.pool.Query(ctx, sql, query.Center.Lon, query.Center.Lat, query.RadiusM, query.Category, query.Subcategory, query.Limit)
+		LIMIT $6;`,
+		query.Center.Lon, query.Center.Lat,
+		query.RadiusM, query.Category,
+		query.Subcategory, query.Limit)
 
 	if err != nil {
 		return nil, fmt.Errorf("querry find nearby: %w", err)

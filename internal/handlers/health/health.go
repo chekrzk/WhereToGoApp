@@ -26,7 +26,7 @@ func (h *Handler) Live(c fiber.Ctx) error {
 	)
 }
 
-func (h *Handler) Ping(c fiber.Ctx) error {
+func (h *Handler) Ping(c fiber.Ctx) error { // ping от контейнера
 	pingCtx, cancel := context.WithTimeout(c, 2*time.Second)
 	defer cancel()
 

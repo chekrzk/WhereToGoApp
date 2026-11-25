@@ -25,7 +25,7 @@ func (h *Handle) FindNearby(ctx fiber.Ctx) error {
 		query poi.NearbyQuery
 		err   error
 	)
-
+	// ОШИБКИ ЧЕРЕЗ МИДЛВАРЕ
 	query.Center.Lat, err = strconv.ParseFloat(ctx.Query("lat"), 64)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
